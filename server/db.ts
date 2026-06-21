@@ -55,7 +55,7 @@ interface DBSchema {
 
 let db: DBSchema = { projects: [], module_content: [], chat_messages: [], media: [] };
 
-export function initDB() {
+export async function initDB() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
@@ -129,7 +129,7 @@ export interface MediaItem {
 
 // ===== Project CRUD =====
 
-export function createProject(title: string, genre: string = '', logline: string = ''): Project {
+export async function createProject(title: string, genre: string = '', logline: string = ''): Promise<Project> {
   const project: Project = {
     id: `proj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     title, genre, logline, status: 'active',
@@ -140,17 +140,17 @@ export function createProject(title: string, genre: string = '', logline: string
   return project;
 }
 
-export function getProjects(): Project[] {
+export async function getProjects(): Promise<Project[]> {
   return db.projects
     .filter((p) => p.status === 'active')
     .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
-export function getProject(id: string): Project | undefined {
+export async function getProject(id: string): Promise<Project | undefined> {
   return db.projects.find((p) => p.id === id);
 }
 
-export function updateProject(id: string, updates: Partial<Pick<Project, 'title' | 'genre' | 'logline'>>): void {
+export async function updateProject(id: string, updates: Partial<Pick<Project, 'title' | 'genre' | 'logline'>>): Promise<void> {
   const p = db.projects.find((p) => p.id === id);
   if (!p) return;
   if (updates.title !== undefined) p.title = updates.title;
@@ -160,22 +160,22 @@ export function updateProject(id: string, updates: Partial<Pick<Project, 'title'
   save();
 }
 
-export function deleteProject(id: string): void {
+export async function deleteProject(id: string): Promise<void> {
   const p = db.projects.find((p) => p.id === id);
   if (p) { p.status = 'deleted'; save(); }
 }
 
 // ===== Module Content =====
 
-export function getModuleContent(projectId: string, moduleType: string): ModuleContent | undefined {
+export async function getModuleContent(projectId: string, moduleType: string): Promise<ModuleContent | undefined> {
   return db.module_content.find((mc) => mc.project_id === projectId && mc.module_type === moduleType);
 }
 
-export function getAllModuleContent(projectId: string): ModuleContent[] {
+export async function getAllModuleContent(projectId: string): Promise<ModuleContent[]> {
   return db.module_content.filter((mc) => mc.project_id === projectId);
 }
 
-export function upsertModuleContent(projectId: string, moduleType: string, content: string, metadata: string = '{}'): void {
+export async function upsertModuleContent(projectId: string, moduleType: string, content: string, metadata: string = '{}'): Promise<void> {
   let mc = db.module_content.find((mc) => mc.project_id === projectId && mc.module_type === moduleType);
   if (mc) {
     mc.content = content;
@@ -199,13 +199,13 @@ export function upsertModuleContent(projectId: string, moduleType: string, conte
 
 // ===== Chat Messages =====
 
-export function getChatMessages(projectId: string, moduleType: string): ChatMessage[] {
+export async function getChatMessages(projectId: string, moduleType: string): Promise<ChatMessage[]> {
   return db.chat_messages
     .filter((m) => m.project_id === projectId && m.module_type === moduleType)
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
-export function addChatMessage(projectId: string, moduleType: string, role: string, content: string): ChatMessage {
+export async function addChatMessage(projectId: string, moduleType: string, role: string, content: string): Promise<ChatMessage> {
   const msg: ChatMessage = {
     id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     project_id: projectId,
@@ -218,7 +218,7 @@ export function addChatMessage(projectId: string, moduleType: string, role: stri
   return msg;
 }
 
-export function clearChatMessages(projectId: string, moduleType: string): void {
+export async function clearChatMessages(projectId: string, moduleType: string): Promise<void> {
   db.chat_messages = db.chat_messages.filter(
     (m) => !(m.project_id === projectId && m.module_type === moduleType)
   );
@@ -227,7 +227,7 @@ export function clearChatMessages(projectId: string, moduleType: string): void {
 
 // ===== Media (Images / Videos) =====
 
-export function addMedia(
+export async function addMedia(
   projectId: string,
   sceneNum: string,
   type: string,
@@ -235,7 +235,7 @@ export function addMedia(
   prompt: string,
   provider: string,
   metadata: string = '{}'
-): MediaItem {
+): Promise<MediaItem> {
   const item: MediaItem = {
     id: `media_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     project_id: projectId,
@@ -252,13 +252,13 @@ export function addMedia(
   return item;
 }
 
-export function getProjectMedia(projectId: string): MediaItem[] {
+export async function getProjectMedia(projectId: string): Promise<MediaItem[]> {
   return db.media
     .filter((m) => m.project_id === projectId)
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
-export function getSceneMedia(projectId: string, sceneNum: string, type?: string): MediaItem[] {
+export async function getSceneMedia(projectId: string, sceneNum: string, type?: string): Promise<MediaItem[]> {
   return db.media
     .filter((m) =>
       m.project_id === projectId &&
@@ -268,19 +268,21 @@ export function getSceneMedia(projectId: string, sceneNum: string, type?: string
     .sort((a, b) => b.created_at.localeCompare(a.created_at)); // newest first
 }
 
-export function getLatestSceneImage(projectId: string, sceneNum: string): MediaItem | undefined {
-  return getSceneMedia(projectId, sceneNum, 'image')[0];
+export async function getLatestSceneImage(projectId: string, sceneNum: string): Promise<MediaItem | undefined> {
+  const items = await getSceneMedia(projectId, sceneNum, 'image');
+  return items[0];
 }
 
-export function getLatestSceneVideo(projectId: string, sceneNum: string): MediaItem | undefined {
-  return getSceneMedia(projectId, sceneNum, 'video')[0];
+export async function getLatestSceneVideo(projectId: string, sceneNum: string): Promise<MediaItem | undefined> {
+  const items = await getSceneMedia(projectId, sceneNum, 'video');
+  return items[0];
 }
 
-export function getMediaById(id: string): MediaItem | undefined {
+export async function getMediaById(id: string): Promise<MediaItem | undefined> {
   return db.media.find((m) => m.id === id);
 }
 
-export function deleteMedia(id: string): void {
+export async function deleteMedia(id: string): Promise<void> {
   const item = db.media.find((m) => m.id === id);
   if (item) {
     // Delete the file from disk
@@ -291,7 +293,7 @@ export function deleteMedia(id: string): void {
   }
 }
 
-export function deleteProjectMedia(projectId: string): void {
+export async function deleteProjectMedia(projectId: string): Promise<void> {
   const items = db.media.filter((m) => m.project_id === projectId);
   for (const item of items) {
     const fullPath = path.join(MEDIA_DIR, item.file_path);
@@ -303,10 +305,10 @@ export function deleteProjectMedia(projectId: string): void {
 
 // ===== SDK Session Tracking (no-op in JSON store) =====
 
-export function getSdkSession(_projectId: string, _moduleType: string): string | null {
+export async function getSdkSession(_projectId: string, _moduleType: string): Promise<string | null> {
   return null;
 }
 
-export function setSdkSession(_projectId: string, _moduleType: string, _sessionId: string | null): void {
+export async function setSdkSession(_projectId: string, _moduleType: string, _sessionId: string | null): Promise<void> {
   // no-op
 }

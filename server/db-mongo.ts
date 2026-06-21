@@ -4,7 +4,7 @@
  * Same function signatures as db.ts — just swap the import.
  */
 
-import { MongoClient, Collection, ObjectId, type WithId } from 'mongodb';
+import { MongoClient, Db, Collection, ObjectId, type WithId } from 'mongodb';
 
 // ── Types (same as db.ts) ─────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ export interface MediaItem {
 // ── Singleton ────────────────────────────────────────────────────────────────
 
 let client: MongoClient | null = null;
-let db: any = null;
+let db: Db | null = null;
 
 export async function connectDB(): Promise<void> {
   const uri = process.env.MONGODB_URI;
@@ -69,17 +69,22 @@ export async function connectDB(): Promise<void> {
   console.log('[MongoDB] Connected to Atlas');
 }
 
+function ensureDb(): Db {
+  if (!db) throw new Error('Database not connected. Call connectDB() first.');
+  return db;
+}
+
 export function getProjectsCollection(): Collection<Project> {
-  return db.collection<Project>('projects');
+  return ensureDb().collection<Project>('projects');
 }
 export function getModuleContentCollection(): Collection<ModuleContent> {
-  return db.collection<ModuleContent>('module_content');
+  return ensureDb().collection<ModuleContent>('module_content');
 }
 export function getChatMessagesCollection(): Collection<ChatMessage> {
-  return db.collection<ChatMessage>('chat_messages');
+  return ensureDb().collection<ChatMessage>('chat_messages');
 }
 export function getMediaCollection(): Collection<MediaItem> {
-  return db.collection<MediaItem>('media');
+  return ensureDb().collection<MediaItem>('media');
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────

@@ -52,27 +52,27 @@ app.use('/api/media-files', express.static(MEDIA_DIR));
 // Project Routes
 // ============================================================
 
-app.get('/api/projects', (_req, res) => res.json(getProjects()));
+app.get('/api/projects', async (_req, res) => res.json(await getProjects()));
 
-app.post('/api/projects', (req, res) => {
+app.post('/api/projects', async (req, res) => {
   const { title, genre, logline } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
-  res.json(createProject(title, genre || '', logline || ''));
+  res.json(await createProject(title, genre || '', logline || ''));
 });
 
-app.get('/api/projects/:id', (req, res) => {
-  const p = getProject(req.params.id);
+app.get('/api/projects/:id', async (req, res) => {
+  const p = await getProject(req.params.id);
   if (!p) return res.status(404).json({ error: 'Not found' });
   res.json(p);
 });
 
-app.put('/api/projects/:id', (req, res) => {
-  updateProject(req.params.id, req.body);
+app.put('/api/projects/:id', async (req, res) => {
+  await updateProject(req.params.id, req.body);
   res.json({ success: true });
 });
 
-app.delete('/api/projects/:id', (req, res) => {
-  deleteProject(req.params.id);
+app.delete('/api/projects/:id', async (req, res) => {
+  await deleteProject(req.params.id);
   res.json({ success: true });
 });
 
@@ -80,18 +80,18 @@ app.delete('/api/projects/:id', (req, res) => {
 // Module Content Routes
 // ============================================================
 
-app.get('/api/projects/:pid/modules/:mid/content', (req, res) => {
-  const c = getModuleContent(req.params.pid, req.params.mid);
+app.get('/api/projects/:pid/modules/:mid/content', async (req, res) => {
+  const c = await getModuleContent(req.params.pid, req.params.mid);
   res.json(c || { content: '', metadata: '{}' });
 });
 
-app.put('/api/projects/:pid/modules/:mid/content', (req, res) => {
-  upsertModuleContent(req.params.pid, req.params.mid, req.body.content || '', req.body.metadata || '{}');
+app.put('/api/projects/:pid/modules/:mid/content', async (req, res) => {
+  await upsertModuleContent(req.params.pid, req.params.mid, req.body.content || '', req.body.metadata || '{}');
   res.json({ success: true });
 });
 
-app.get('/api/projects/:pid/modules', (req, res) => {
-  const all = getAllModuleContent(req.params.pid);
+app.get('/api/projects/:pid/modules', async (req, res) => {
+  const all = await getAllModuleContent(req.params.pid);
   const result: Record<string, any> = {};
   for (const mc of all) result[mc.module_type] = { content: mc.content, metadata: mc.metadata };
   res.json(result);
@@ -101,12 +101,12 @@ app.get('/api/projects/:pid/modules', (req, res) => {
 // Chat Messages Routes
 // ============================================================
 
-app.get('/api/projects/:pid/modules/:mid/messages', (req, res) => {
-  res.json(getChatMessages(req.params.pid, req.params.mid));
+app.get('/api/projects/:pid/modules/:mid/messages', async (req, res) => {
+  res.json(await getChatMessages(req.params.pid, req.params.mid));
 });
 
-app.delete('/api/projects/:pid/modules/:mid/messages', (req, res) => {
-  clearChatMessages(req.params.pid, req.params.mid);
+app.delete('/api/projects/:pid/modules/:mid/messages', async (req, res) => {
+  await clearChatMessages(req.params.pid, req.params.mid);
   res.json({ success: true });
 });
 
@@ -270,7 +270,7 @@ app.get('/api/projects/:pid/modules/:mid/chat', async (req, res) => {
   const moduleConfig = MODULE_CONFIGS[mid as ModuleType];
   if (!moduleConfig) return res.status(400).json({ error: '无效的创作模块' });
 
-  const project = getProject(pid);
+  const project = await getProject(pid);
   if (!project) return res.status(404).json({ error: '项目不存在' });
 
   const aiConfig = parseLLMConfig(req.headers as Record<string, string | string[] | undefined>);
@@ -292,9 +292,9 @@ app.get('/api/projects/:pid/modules/:mid/chat', async (req, res) => {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
 
-  addChatMessage(pid, mid, 'user', prompt);
+  await addChatMessage(pid, mid, 'user', prompt);
 
-  const allContent = getAllModuleContent(pid);
+  const allContent = await getAllModuleContent(pid);
   const context = buildProjectContext(
     { title: project.title, genre: project.genre, logline: project.logline },
     allContent
@@ -315,10 +315,10 @@ app.get('/api/projects/:pid/modules/:mid/chat', async (req, res) => {
       assistantText += delta;
       send('delta', { text: delta });
     },
-    () => {
+    async () => {
       if (done) return;
       done = true;
-      if (assistantText) addChatMessage(pid, mid, 'assistant', assistantText);
+      if (assistantText) await addChatMessage(pid, mid, 'assistant', assistantText);
       send('done', { provider: aiConfig.provider, model: aiConfig.model });
       res.end();
     },
@@ -547,7 +547,7 @@ function generateImageSD(
 
 app.post('/api/projects/:pid/scenes/:sceneNum/image', async (req, res) => {
   const { pid, sceneNum } = req.params;
-  const project = getProject(pid);
+  const project = await getProject(pid);
   if (!project) return res.status(404).json({ error: '项目不存在' });
 
   const imgConfig = parseImgConfig(req.headers as Record<string, string | string[] | undefined>);
@@ -593,7 +593,7 @@ app.post('/api/projects/:pid/scenes/:sceneNum/image', async (req, res) => {
     fs.writeFileSync(filePath, Buffer.from(result.b64, 'base64'));
 
     // Save to DB
-    const media = addMedia(pid, sceneNum, 'image', fileName, prompt, imgConfig.provider);
+    const media = await addMedia(pid, sceneNum, 'image', fileName, prompt, imgConfig.provider);
 
     res.json({
       success: true,
@@ -965,7 +965,7 @@ function downloadVideo(url: string): Promise<{ fileName: string; filePath: strin
 
 app.post('/api/projects/:pid/scenes/:sceneNum/video', async (req, res) => {
   const { pid, sceneNum } = req.params;
-  const project = getProject(pid);
+  const project = await getProject(pid);
   if (!project) return res.status(404).json({ error: '项目不存在' });
 
   const vidConfig = parseVidConfig(req.headers as Record<string, string | string[] | undefined>);
@@ -1058,7 +1058,7 @@ app.post('/api/projects/:pid/scenes/:sceneNum/video', async (req, res) => {
 
     // Save to DB
     const metadata = JSON.stringify(options || {});
-    const media = addMedia(pid, sceneNum, 'video', fileName, prompt, vidConfig.provider, metadata);
+    const media = await addMedia(pid, sceneNum, 'video', fileName, prompt, vidConfig.provider, metadata);
 
     send('done', {
       mediaId: media.id,
@@ -1082,22 +1082,22 @@ app.post('/api/projects/:pid/scenes/:sceneNum/video', async (req, res) => {
 // Media Routes
 // ============================================================
 
-app.get('/api/projects/:pid/media', (req, res) => {
-  const items = getProjectMedia(req.params.pid);
+app.get('/api/projects/:pid/media', async (req, res) => {
+  const items = await getProjectMedia(req.params.pid);
   res.json(items.map((m) => ({
     ...m,
     url: `/api/media-files/${m.file_path}`,
   })));
 });
 
-app.get('/api/media/:id', (req, res) => {
-  const item = getMediaById(req.params.id);
+app.get('/api/media/:id', async (req, res) => {
+  const item = await getMediaById(req.params.id);
   if (!item) return res.status(404).json({ error: 'Not found' });
   res.json({ ...item, url: `/api/media-files/${item.file_path}` });
 });
 
-app.delete('/api/media/:id', (req, res) => {
-  deleteMedia(req.params.id);
+app.delete('/api/media/:id', async (req, res) => {
+  await deleteMedia(req.params.id);
   res.json({ success: true });
 });
 
@@ -1118,15 +1118,16 @@ app.get('/api/health', (_req, res) => {
 // Start
 // ============================================================
 
-initDB();
-
-server.listen(PORT, () => {
+(async () => {
+  await initDB();
+  server.listen(PORT, () => {
   const line = '='.repeat(40);
   console.log(`\n${line}`);
   console.log(`  ScriptCraft AI`);
   console.log(`  http://localhost:${PORT}`);
   console.log(`  Engine: Real LLM + Image Gen + Video Gen`);
   console.log(`${line}\n`);
-});
+  });
+})();
 
 export { app, server };

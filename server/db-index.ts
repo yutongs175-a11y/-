@@ -7,13 +7,14 @@
 
 import { fileURLToPath } from 'url';
 import path from 'path';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── JSON file storage (dev / local) ────────────────────────────────
 import {
   initDB as initJSON,
-  getMediaDir,
+  getMediaDir as getMediaDirJSON,
   createProject as createProjectJSON,
   getProjects as getProjectsJSON,
   getProject as getProjectJSON,
@@ -65,6 +66,11 @@ const useMongo = !!process.env.MONGODB_URI;
 export async function initDB(): Promise<void> {
   if (useMongo) {
     await connectDB();
+    // Ensure media directory exists on this server
+    const mediaDir = path.join(__dirname, '..', 'data', 'media');
+    if (!fs.existsSync(mediaDir)) {
+      fs.mkdirSync(mediaDir, { recursive: true });
+    }
   } else {
     initJSON();
   }
@@ -77,7 +83,7 @@ export function getMediaDir(): string {
     return path.join(__dirname, '..', 'data', 'media');
   }
   // Delegate to JSON db's getMediaDir
-  return getMediaDir();
+  return getMediaDirJSON();
 }
 
 // ── Project CRUD ─────────────────────────────────────────────────────
