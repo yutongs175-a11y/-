@@ -100,7 +100,7 @@ export const IMG_PROVIDERS: ImageProviderInfo[] = [
     name: '即梦 AI (火山引擎)',
     baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
     models: [
-      { id: 'doubao-seedream-3-0-t2i-250415', name: 'Seedream 3.0 (高质量)' },
+      { id: 'doubao-seedream-4-0-250828', name: 'Seedream 4.0 (推荐)' },
     ],
     helpUrl: 'https://console.volcengine.com/ark/region:ark+cn-beijing/apikey',
   },

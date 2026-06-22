@@ -423,7 +423,7 @@ const STYLE_PRESETS: Record<string, string> = {
 };
 
 /**
- * Generate image via Jimeng AI (Volcengine Ark) — OpenAI-compatible format
+ * Generate image via Jimeng AI (Volcengine Ark) — compatible with both b64_json and url responses
  */
 function generateImageJimeng(
   config: ImgConfig,
@@ -456,16 +456,49 @@ function generateImageJimeng(
           let msg = `API ${res.statusCode}`;
           try {
             const parsed = JSON.parse(data);
-            msg = parsed.error?.message || parsed.message || msg;
+            const errCode = parsed.error?.code || '';
+            if (res.statusCode === 403 && errCode === 'PermissionDenied') {
+              msg = '模型未开通。请前往火山引擎控制台 → 模型广场 → 开通 Seedream 4.0 模型权限';
+            } else if (res.statusCode === 403) {
+              msg = `权限不足(${errCode})。请检查火山引擎控制台中该模型的访问权限`;
+            } else {
+              msg = parsed.error?.message || parsed.message || msg;
+            }
           } catch {}
           reject(new Error(msg));
           return;
         }
         try {
           const parsed = JSON.parse(data);
-          const b64 = parsed.data?.[0]?.b64_json;
-          if (!b64) reject(new Error('API 未返回图片数据'));
-          else resolve({ b64, format: 'png' });
+          const item = parsed.data?.[0];
+
+          // Handle b64_json response format
+          if (item?.b64_json) {
+            resolve({ b64: item.b64_json, format: 'png' });
+            return;
+          }
+
+          // Handle url response format — download the image
+          if (item?.url) {
+            const imgUrl = item.url;
+            const imgProtocol = imgUrl.startsWith('https:') ? https : http;
+            imgProtocol.get(imgUrl, (imgRes) => {
+              if (imgRes.statusCode !== 200) {
+                reject(new Error(`下载图片失败: HTTP ${imgRes.statusCode}`));
+                return;
+              }
+              const chunks: Buffer[] = [];
+              imgRes.on('data', (chunk: Buffer) => chunks.push(chunk));
+              imgRes.on('end', () => {
+                const buf = Buffer.concat(chunks);
+                resolve({ b64: buf.toString('base64'), format: 'png' });
+              });
+              imgRes.on('error', (err) => reject(new Error(`下载图片失败: ${err.message}`)));
+            }).on('error', (err) => reject(new Error(`下载图片失败: ${err.message}`)));
+            return;
+          }
+
+          reject(new Error('API 未返回图片数据'));
         } catch {
           reject(new Error('解析 API 响应失败'));
         }
@@ -565,13 +598,14 @@ app.post('/api/projects/:pid/scenes/:sceneNum/image', async (req, res) => {
   // Determine image size from aspect ratio
   const aspectRatio = options.aspectRatio || '16:9';
   const sizeMap: Record<string, string> = {
-    '16:9': '1024x576',
-    '9:16': '576x1024',
+    '16:9': '1920x1080',
+    '9:16': '1080x1920',
     '1:1': '1024x1024',
-    '4:3': '1024x768',
-    '3:4': '768x1024',
+    '4:3': '1280x960',
+    '3:4': '960x1280',
+    '2.39:1': '1920x808',
   };
-  const imageSize = sizeMap[aspectRatio] || '1024x576';
+  const imageSize = sizeMap[aspectRatio] || '1920x1080';
 
   try {
     let result: { b64: string; format: string };
@@ -602,9 +636,13 @@ app.post('/api/projects/:pid/scenes/:sceneNum/image', async (req, res) => {
       prompt,
     });
   } catch (err: any) {
-    const msg = err.message || '生图失败';
-    const userFriendly = msg.includes('401') || msg.includes('403')
+    const msg: string = err.message || '生图失败';
+    const userFriendly = msg.includes('模型未开通')
+      ? msg
+      : msg.includes('401') || msg.includes('密钥无效')
       ? '生图 API 密钥无效，请检查设置中的密钥。'
+      : msg.includes('403') || msg.includes('权限')
+      ? `${msg}`
       : msg.includes('429')
       ? '生图 API 调用频率超限，请稍后重试。'
       : `生图失败: ${msg}`;

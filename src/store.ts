@@ -57,7 +57,7 @@ function loadImgSettings(): ImageSettings {
       if (parsed.provider && parsed.apiKey && parsed.model) return parsed;
     }
   } catch {}
-  return { provider: 'jimeng', apiKey: '', baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedream-3-0-t2i-250415' };
+  return { provider: 'jimeng', apiKey: '', baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedream-4-0-250828' };
 }
 
 function saveImgSettings(s: ImageSettings) {
