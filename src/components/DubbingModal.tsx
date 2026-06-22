@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import type { SceneData, MediaItem } from '../types';
 import { api } from '../api';
 import { useStore } from '../store';
+import { IMETextarea } from '../components/IMEInput';
 
 interface DubbingModalProps {
   scene: SceneData;
@@ -131,9 +132,9 @@ export default function DubbingModal({ scene, video, hasVidKey, onDone, onClose 
               <label className="block text-[11px] text-white/25 mb-2 font-medium tracking-[0.03em]">
                 配音文本 <span className="text-white/15 font-normal">（留空则使用场景描述）</span>
               </label>
-              <textarea
+              <IMETextarea
                 value={text}
-                onChange={e => setText(e.target.value)}
+                onValueChange={v => setText(v)}
                 rows={3}
                 className="textarea-glass"
                 placeholder="输入需要配音的台词或旁白文本…"

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { SceneData, VideoMode, VideoGenOptions } from '../types';
+import { IMETextarea } from '../components/IMEInput';
 
 interface VideoGenModalProps {
   scenes: SceneData[];
@@ -109,9 +110,9 @@ export default function VideoGenModal({
           <label className="block text-[11px] text-white/25 mb-2 font-medium tracking-[0.03em]">
             自定义视频要求（可选）
           </label>
-          <textarea
+          <IMETextarea
             value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
+            onValueChange={(v) => setCustomPrompt(v)}
             rows={2}
             className="textarea-glass"
             placeholder="描述你想要的视频效果，如：缓慢推进，柔光氛围，胶片质感…"

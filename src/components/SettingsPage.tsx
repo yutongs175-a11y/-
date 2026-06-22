@@ -93,10 +93,10 @@ export default function SettingsPage({ onClose }: { onClose: () => void }) {
             <AITab settings={aiSettings} update={updateAISettings} />
           )}
           {tab === 'image' && (
-            <ImageTab settings={imgSettings} update={updateImgSettings} />
+            <ImageTab settings={imgSettings} update={updateImgSettings} aiSettings={aiSettings} />
           )}
           {tab === 'video' && (
-            <VideoTab settings={vidSettings} update={updateVidSettings} />
+            <VideoTab settings={vidSettings} update={updateVidSettings} aiSettings={aiSettings} />
           )}
         </div>
 
@@ -190,15 +190,20 @@ function AITab({
    Image Tab
    ============================================================ */
 function ImageTab({
-  settings, update,
+  settings, update, aiSettings,
 }: {
   settings: { provider: ImageProvider; apiKey: string; baseURL: string; model: string };
   update: (s: typeof settings) => void;
+  aiSettings: { provider: AIProvider; apiKey: string; baseURL: string; model: string };
 }) {
   const handleProvider = (p: ImageProvider) => {
     const defaults = IMG_DEFAULTS[p];
     update({ ...settings, provider: p, baseURL: defaults.baseURL, model: defaults.model });
   };
+
+  // Check if text AI also uses 火山引擎 Ark (豆包) — same key can be shared
+  const canSyncFromAI = aiSettings.provider === 'doubao' && settings.provider === 'jimeng';
+  const sameKey = settings.apiKey === aiSettings.apiKey && settings.apiKey.length > 0;
 
   return (
     <div className="space-y-5">
@@ -223,6 +228,26 @@ function ImageTab({
         </div>
       </Section>
 
+      {/* Sync key hint for 豆包 + 即梦 */}
+      {canSyncFromAI && !sameKey && aiSettings.apiKey.length > 0 && (
+        <div className="bg-accent-gold/[0.06] border border-accent-gold/[0.12] rounded-[10px] p-3.5">
+          <p className="text-[10px] text-white/30 mb-2">
+            💡 豆包和即梦共用火山引擎 Ark 密钥，可以一键同步
+          </p>
+          <button
+            onClick={() => update({ ...settings, apiKey: aiSettings.apiKey })}
+            className="btn-glass-gold py-1.5 px-3 text-[11px]"
+          >
+            📋 从文本大模型同步密钥
+          </button>
+        </div>
+      )}
+      {sameKey && (
+        <div className="bg-accent-green/[0.06] border border-accent-green/[0.12] rounded-[10px] p-3 flex items-center gap-2 text-[10px] text-accent-green/70">
+          ✓ 已与文本大模型密钥同步
+        </div>
+      )}
+
       <Section label="API 密钥">
         <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="生图 API Key" />
         <p className="text-[10px] text-white/20 mt-1.5">密钥仅保存在你的浏览器本地</p>
@@ -243,15 +268,19 @@ function ImageTab({
    Video Tab
    ============================================================ */
 function VideoTab({
-  settings, update,
+  settings, update, aiSettings,
 }: {
   settings: { provider: VideoProvider; apiKey: string; baseURL: string; model: string };
   update: (s: typeof settings) => void;
+  aiSettings: { provider: AIProvider; apiKey: string; baseURL: string; model: string };
 }) {
   const handleProvider = (p: VideoProvider) => {
     const defaults = VID_DEFAULTS[p];
     update({ ...settings, provider: p, baseURL: defaults.baseURL, model: defaults.model });
   };
+
+  const canSyncFromAI = aiSettings.provider === 'doubao' && settings.provider === 'jimeng';
+  const sameKey = settings.apiKey === aiSettings.apiKey && settings.apiKey.length > 0;
 
   return (
     <div className="space-y-5">
@@ -275,6 +304,26 @@ function VideoTab({
           ))}
         </div>
       </Section>
+
+      {/* Sync key hint */}
+      {canSyncFromAI && !sameKey && aiSettings.apiKey.length > 0 && (
+        <div className="bg-accent-gold/[0.06] border border-accent-gold/[0.12] rounded-[10px] p-3.5">
+          <p className="text-[10px] text-white/30 mb-2">
+            💡 豆包和即梦共用火山引擎 Ark 密钥，可以一键同步
+          </p>
+          <button
+            onClick={() => update({ ...settings, apiKey: aiSettings.apiKey })}
+            className="btn-glass-gold py-1.5 px-3 text-[11px]"
+          >
+            📋 从文本大模型同步密钥
+          </button>
+        </div>
+      )}
+      {sameKey && (
+        <div className="bg-accent-green/[0.06] border border-accent-green/[0.12] rounded-[10px] p-3 flex items-center gap-2 text-[10px] text-accent-green/70">
+          ✓ 已与文本大模型密钥同步
+        </div>
+      )}
 
       <Section label="API 密钥">
         <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="生视频 API Key" />

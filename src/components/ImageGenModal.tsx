@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { SceneData } from '../types';
+import { IMETextarea } from '../components/IMEInput';
 
 interface ImageGenModalProps {
   scene: SceneData;
@@ -67,9 +68,9 @@ export default function ImageGenModal({ scene, hasImgKey, onGenerate, onClose }:
           <label className="block text-[11px] text-white/25 mb-2 font-medium tracking-[0.03em]">
             自定义构图要求（可选）
           </label>
-          <textarea
+          <IMETextarea
             value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
+            onValueChange={(v) => setCustomPrompt(v)}
             rows={3}
             className="textarea-glass"
             placeholder="补充你的构图和美术设计要求，将追加到自动提示词之后…"
