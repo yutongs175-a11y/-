@@ -1,13 +1,13 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 /**
  * 解决 React 受控组件与中文输入法（IME）冲突的问题
  *
- * 问题：当使用拼音等输入法时，React 的 value={state} + onChange 会在
- * 输入法"组字"过程中触发重渲染，导致输入法中间状态丢失，字打不进去。
- *
- * 解决：通过 onCompositionStart/End 感知输入法状态，
- * 组字期间跳过 onChange，组字完成后再同步 value。
+ * 原理：
+ * - 组字期间（compositioning）屏蔽 onChange，不让 React 状态更新
+ *   React 不会重渲染，DOM 值不会被重置，输入法正常工作
+ * - 组字结束后浏览器会自然触发 input 事件，
+ *   React 的 onChange 会响应，此时 composing=false，正常同步状态
  */
 
 export function IMETextarea({
@@ -21,14 +21,19 @@ export function IMETextarea({
     <textarea
       value={value}
       onChange={(e) => {
-        if (!composing.current) onChange?.(e);
+        // 组字期间不触发 onChange，避免打断输入法
+        if (!composing.current) {
+          onChange?.(e);
+        }
       }}
       onCompositionStart={() => {
         composing.current = true;
       }}
-      onCompositionEnd={(e) => {
+      onCompositionEnd={() => {
+        // 组字结束：先标记，让后续的 onChange 能通过
         composing.current = false;
-        onChange?.(e as any);
+        // 浏览器会在 onCompositionEnd 之后自然触发 onInput/onChange，
+        // 无需手动触发，避免重复/错误事件
       }}
       {...props}
     />
@@ -46,14 +51,15 @@ export function IMEInput({
     <input
       value={value}
       onChange={(e) => {
-        if (!composing.current) onChange?.(e);
+        if (!composing.current) {
+          onChange?.(e);
+        }
       }}
       onCompositionStart={() => {
         composing.current = true;
       }}
-      onCompositionEnd={(e) => {
+      onCompositionEnd={() => {
         composing.current = false;
-        onChange?.(e as any);
       }}
       {...props}
     />
