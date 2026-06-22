@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../store';
+import { IMEInput } from './IMEInput';
 import type { ModuleType } from '../types';
 
 const MODULE_ICONS: Record<string, string> = {
@@ -76,7 +77,7 @@ export default function Sidebar() {
 
         {showNewProject && (
           <div className="mx-3 mb-3 p-3 glass-card-subtle space-y-2 animate-fade-in-down">
-            <input
+            <IMEInput
               type="text"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -85,7 +86,7 @@ export default function Sidebar() {
               className="w-full px-3 py-2 bg-white/[0.05] text-warm-title text-sm rounded-lg border border-white/[0.08] outline-none focus:border-accent-gold/40 transition-all placeholder:text-white/20"
               autoFocus
             />
-            <input
+            <IMEInput
               type="text"
               value={newGenre}
               onChange={(e) => setNewGenre(e.target.value)}

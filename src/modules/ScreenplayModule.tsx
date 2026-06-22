@@ -1,4 +1,5 @@
 import { useStore } from '../store';
+import { IMETextarea } from '../components/IMEInput';
 
 /**
  * 剧本正文 — 标准剧本格式编辑器 · 玻璃拟态
@@ -40,7 +41,7 @@ export default function ScreenplayModule() {
           <h3 className="font-serif text-sm font-normal text-warm-title tracking-[0.04em]">剧本正文</h3>
           <span className="text-[10px] text-white/20">自动保存 · 标准剧本格式</span>
         </div>
-        <textarea
+        <IMETextarea
           value={content}
           onChange={(e) => saveContent(e.target.value)}
           className="w-full h-[550px] bg-transparent outline-none resize-none font-mono text-[14px] text-warm-body/70 leading-[1.8] px-7 py-6 placeholder:text-white/12"

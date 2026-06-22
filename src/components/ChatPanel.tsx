@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store';
 import { api } from '../api';
+import { IMETextarea } from './IMEInput';
 
 interface LocalMessage {
   role: 'user' | 'assistant';
@@ -160,7 +161,7 @@ export default function ChatPanel() {
       {/* Input */}
       <div className="px-4 py-3 border-t border-white/[0.06]">
         <div className="flex gap-2">
-          <textarea
+          <IMETextarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {

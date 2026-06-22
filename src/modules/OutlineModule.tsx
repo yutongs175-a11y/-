@@ -4,6 +4,7 @@ import { api } from '../api';
 import type { SceneData, MediaItem, VideoGenOptions } from '../types';
 import SceneCard from '../components/SceneCard';
 import VideoGenModal from '../components/VideoGenModal';
+import { IMETextarea } from '../components/IMEInput';
 
 const SCENE_TEMPLATE = `【场景1】建立镜头 | 咖啡馆 — 日 | 主角 | 展示日常 | 清晨的阳光透过落地窗洒在木质桌面上
   画面描述：清晨的阳光透过落地窗洒在木质桌面上，主角独自坐在窗边
@@ -208,7 +209,7 @@ export default function OutlineModule() {
               </p>
             </div>
           </div>
-          <textarea
+          <IMETextarea
             value={batchPrompt} onChange={(e) => setBatchPrompt(e.target.value)}
             rows={3}
             className="textarea-glass"
@@ -297,7 +298,7 @@ export default function OutlineModule() {
             + 插入模板
           </button>
         </div>
-        <textarea
+        <IMETextarea
           value={content} onChange={(e) => saveContent(e.target.value)}
           className="w-full h-[400px] bg-transparent outline-none resize-none font-mono text-[13px] text-warm-body/70 leading-relaxed px-7 py-6 placeholder:text-white/12"
           placeholder={`在这里编写你的分场大纲。

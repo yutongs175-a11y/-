@@ -1,4 +1,5 @@
 import { useStore } from '../store';
+import { IMETextarea } from '../components/IMEInput';
 
 /**
  * 对白润色 — 台词精炼润色 · 玻璃拟态
@@ -38,7 +39,7 @@ export default function DialogueModule() {
           <h3 className="font-serif text-sm font-normal text-warm-title tracking-[0.04em]">对白编辑</h3>
           <span className="text-[10px] text-white/20">自动保存</span>
         </div>
-        <textarea
+        <IMETextarea
           value={content}
           onChange={(e) => saveContent(e.target.value)}
           className="w-full h-[500px] bg-transparent outline-none resize-none font-serif text-[14px] text-warm-body/70 leading-[1.8] px-7 py-6 placeholder:text-white/12"

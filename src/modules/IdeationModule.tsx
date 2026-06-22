@@ -1,4 +1,5 @@
 import { useStore } from '../store';
+import { IMEInput, IMETextarea } from '../components/IMEInput';
 
 /**
  * 灵感工坊 — 极简电影感玻璃拟态
@@ -15,7 +16,7 @@ export default function IdeationModule() {
 
         <div>
           <label className="block text-[11px] text-white/30 mb-2 font-medium tracking-[0.03em]">片名</label>
-          <input
+          <IMEInput
             type="text"
             value={currentProject?.title || ''}
             onChange={(e) => updateProject(currentProject!.id, { title: e.target.value })}
@@ -28,7 +29,7 @@ export default function IdeationModule() {
           <label className="block text-[11px] text-white/30 mb-2 font-medium tracking-[0.03em]">
             一句话梗概 (Logline)
           </label>
-          <textarea
+          <IMETextarea
             value={currentProject?.logline || ''}
             onChange={(e) => updateProject(currentProject!.id, { logline: e.target.value })}
             className="textarea-glass"
@@ -47,7 +48,7 @@ export default function IdeationModule() {
           <h3 className="font-serif text-sm font-normal text-warm-title tracking-[0.04em]">灵感笔记</h3>
           <span className="text-[10px] text-white/20">自动保存</span>
         </div>
-        <textarea
+        <IMETextarea
           value={content}
           onChange={(e) => saveContent(e.target.value)}
           className="w-full h-[420px] bg-transparent outline-none resize-none font-serif text-warm-body/80 leading-relaxed text-[14px] px-7 py-6 placeholder:text-white/12"

@@ -1,4 +1,5 @@
 import { useStore } from '../store';
+import { IMETextarea } from '../components/IMEInput';
 
 interface CharacterCard {
   name: string;
@@ -111,7 +112,7 @@ export default function CharacterModule() {
             + 添加角色模板
           </button>
         </div>
-        <textarea
+        <IMETextarea
           value={content}
           onChange={(e) => saveContent(e.target.value)}
           className="w-full h-[400px] bg-transparent outline-none resize-none font-mono text-[13px] text-warm-body/70 leading-relaxed px-7 py-6 placeholder:text-white/12"
