@@ -163,7 +163,7 @@ export default function ChatPanel() {
         <div className="flex gap-2">
           <IMETextarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onValueChange={(v) => setInput(v)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();

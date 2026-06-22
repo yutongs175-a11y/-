@@ -19,7 +19,7 @@ export default function IdeationModule() {
           <IMEInput
             type="text"
             value={currentProject?.title || ''}
-            onChange={(e) => updateProject(currentProject!.id, { title: e.target.value })}
+            onValueChange={(v) => updateProject(currentProject!.id, { title: v })}
             className="input-glass font-serif"
             placeholder="给你的故事起个名字…"
           />
@@ -31,7 +31,7 @@ export default function IdeationModule() {
           </label>
           <IMETextarea
             value={currentProject?.logline || ''}
-            onChange={(e) => updateProject(currentProject!.id, { logline: e.target.value })}
+            onValueChange={(v) => updateProject(currentProject!.id, { logline: v })}
             className="textarea-glass"
             rows={3}
             placeholder="用一句话概括你的故事：谁，在什么处境下，为了什么目标，面临什么障碍…"
@@ -50,7 +50,7 @@ export default function IdeationModule() {
         </div>
         <IMETextarea
           value={content}
-          onChange={(e) => saveContent(e.target.value)}
+          onValueChange={(v) => saveContent(v)}
           className="w-full h-[420px] bg-transparent outline-none resize-none font-serif text-warm-body/80 leading-relaxed text-[14px] px-7 py-6 placeholder:text-white/12"
           placeholder={`在这里记录你的一切灵感火花——
 

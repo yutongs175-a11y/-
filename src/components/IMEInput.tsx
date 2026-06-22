@@ -1,40 +1,62 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 /**
  * 解决 React 受控组件与中文输入法（IME）冲突的问题
  *
- * 原理：
- * - 组字期间（compositioning）屏蔽 onChange，不让 React 状态更新
- *   React 不会重渲染，DOM 值不会被重置，输入法正常工作
- * - 组字结束后浏览器会自然触发 input 事件，
- *   React 的 onChange 会响应，此时 composing=false，正常同步状态
+ * 方案：
+ * - 内部维护 localValue，组字期间自由编辑，不阻塞输入法
+ * - 组字结束后（onCompositionEnd）主动把 DOM 最新值通过 onValueChange 回调通知父组件
+ * - 父组件通过 onValueChange 接收纯字符串，无需处理 React ChangeEvent
  */
 
 export function IMETextarea({
   value,
-  onChange,
+  onValueChange,
+  className,
   ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+}: {
+  value: string;
+  onValueChange?: (value: string) => void;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'>) {
+  const [localValue, setLocalValue] = useState(value || '');
   const composing = useRef(false);
+  const elRef = useRef<HTMLTextAreaElement>(null);
+
+  // 外部 value 变化时同步（非组字状态下）
+  useEffect(() => {
+    if (!composing.current) {
+      setLocalValue(value || '');
+    }
+  }, [value]);
+
+  const syncToParent = () => {
+    const el = elRef.current;
+    if (el && onValueChange) {
+      onValueChange(el.value);
+    }
+  };
 
   return (
     <textarea
-      value={value}
+      ref={elRef}
+      value={localValue}
       onChange={(e) => {
-        // 组字期间不触发 onChange，避免打断输入法
+        const v = e.target.value;
+        setLocalValue(v);
+        // 非组字状态直接同步
         if (!composing.current) {
-          onChange?.(e);
+          onValueChange?.(v);
         }
       }}
       onCompositionStart={() => {
         composing.current = true;
       }}
       onCompositionEnd={() => {
-        // 组字结束：先标记，让后续的 onChange 能通过
         composing.current = false;
-        // 浏览器会在 onCompositionEnd 之后自然触发 onInput/onChange，
-        // 无需手动触发，避免重复/错误事件
+        // 组字结束后主动同步 DOM 最新值给父组件
+        queueMicrotask(syncToParent);
       }}
+      className={className}
       {...props}
     />
   );
@@ -42,17 +64,39 @@ export function IMETextarea({
 
 export function IMEInput({
   value,
-  onChange,
+  onValueChange,
+  className,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  value: string;
+  onValueChange?: (value: string) => void;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
+  const [localValue, setLocalValue] = useState(value || '');
   const composing = useRef(false);
+  const elRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!composing.current) {
+      setLocalValue(value || '');
+    }
+  }, [value]);
+
+  const syncToParent = () => {
+    const el = elRef.current;
+    if (el && onValueChange) {
+      onValueChange(el.value);
+    }
+  };
 
   return (
     <input
-      value={value}
+      ref={elRef}
+      value={localValue}
       onChange={(e) => {
+        const v = e.target.value;
+        setLocalValue(v);
         if (!composing.current) {
-          onChange?.(e);
+          onValueChange?.(v);
         }
       }}
       onCompositionStart={() => {
@@ -60,7 +104,9 @@ export function IMEInput({
       }}
       onCompositionEnd={() => {
         composing.current = false;
+        queueMicrotask(syncToParent);
       }}
+      className={className}
       {...props}
     />
   );

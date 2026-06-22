@@ -41,7 +41,7 @@ export default function DialogueModule() {
         </div>
         <IMETextarea
           value={content}
-          onChange={(e) => saveContent(e.target.value)}
+          onValueChange={(v) => saveContent(v)}
           className="w-full h-[500px] bg-transparent outline-none resize-none font-serif text-[14px] text-warm-body/70 leading-[1.8] px-7 py-6 placeholder:text-white/12"
           placeholder={`将需要润色的对白段落粘贴在这里——
 

@@ -43,7 +43,7 @@ export default function ScreenplayModule() {
         </div>
         <IMETextarea
           value={content}
-          onChange={(e) => saveContent(e.target.value)}
+          onValueChange={(v) => saveContent(v)}
           className="w-full h-[550px] bg-transparent outline-none resize-none font-mono text-[14px] text-warm-body/70 leading-[1.8] px-7 py-6 placeholder:text-white/12"
           placeholder={`开始创作你的剧本——
 

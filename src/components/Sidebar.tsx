@@ -80,7 +80,7 @@ export default function Sidebar() {
             <IMEInput
               type="text"
               value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
+              onValueChange={(v) => setNewTitle(v)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               placeholder="片名…"
               className="w-full px-3 py-2 bg-white/[0.05] text-warm-title text-sm rounded-lg border border-white/[0.08] outline-none focus:border-accent-gold/40 transition-all placeholder:text-white/20"
@@ -89,7 +89,7 @@ export default function Sidebar() {
             <IMEInput
               type="text"
               value={newGenre}
-              onChange={(e) => setNewGenre(e.target.value)}
+              onValueChange={(v) => setNewGenre(v)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               placeholder="类型（悬疑/爱情/科幻…）"
               className="w-full px-3 py-2 bg-white/[0.05] text-warm-title text-sm rounded-lg border border-white/[0.08] outline-none focus:border-accent-gold/40 transition-all placeholder:text-white/20"

@@ -210,7 +210,7 @@ export default function OutlineModule() {
             </div>
           </div>
           <IMETextarea
-            value={batchPrompt} onChange={(e) => setBatchPrompt(e.target.value)}
+            value={batchPrompt} onValueChange={(v) => setBatchPrompt(v)}
             rows={3}
             className="textarea-glass"
             placeholder="示例：电影感画面，暖色调，胶片质感，浅景深，专业摄影构图"
@@ -299,7 +299,8 @@ export default function OutlineModule() {
           </button>
         </div>
         <IMETextarea
-          value={content} onChange={(e) => saveContent(e.target.value)}
+          value={content}
+          onValueChange={(v) => saveContent(v)}
           className="w-full h-[400px] bg-transparent outline-none resize-none font-mono text-[13px] text-warm-body/70 leading-relaxed px-7 py-6 placeholder:text-white/12"
           placeholder={`在这里编写你的分场大纲。
 

@@ -114,7 +114,7 @@ export default function CharacterModule() {
         </div>
         <IMETextarea
           value={content}
-          onChange={(e) => saveContent(e.target.value)}
+          onValueChange={(v) => saveContent(v)}
           className="w-full h-[400px] bg-transparent outline-none resize-none font-mono text-[13px] text-warm-body/70 leading-relaxed px-7 py-6 placeholder:text-white/12"
           placeholder={`在这里创建你的角色。点击"添加角色模板"生成标准格式，或让右侧 AI 帮你构建。
 

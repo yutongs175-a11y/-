@@ -1113,6 +1113,20 @@ app.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+// ============================================================
+// Static: serve built frontend + SPA fallback (production mode)
+// ============================================================
+const STATIC_DIR = path.join(__dirname, '..');
+if (fs.existsSync(path.join(STATIC_DIR, 'index.html'))) {
+  app.use(express.static(STATIC_DIR));
+
+  // SPA fallback: non-API & non-static routes → index.html
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(STATIC_DIR, 'index.html'));
+  });
+
+  console.log(`  Frontend: ${STATIC_DIR}`);
+}
 
 // ============================================================
 // Start
