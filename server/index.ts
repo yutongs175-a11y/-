@@ -437,6 +437,7 @@ function generateImageJimeng(
       prompt,
       response_format: 'b64_json',
       size,
+      watermark: false,
     });
 
     const isHttps = url.protocol === 'https:';
@@ -598,14 +599,14 @@ app.post('/api/projects/:pid/scenes/:sceneNum/image', async (req, res) => {
   // Determine image size from aspect ratio
   const aspectRatio = options.aspectRatio || '16:9';
   const sizeMap: Record<string, string> = {
-    '16:9': '1920x1080',
-    '9:16': '1080x1920',
-    '1:1': '1024x1024',
-    '4:3': '1280x960',
-    '3:4': '960x1280',
-    '2.39:1': '1920x808',
+    '16:9': '2848x1600',
+    '9:16': '1600x2848',
+    '1:1': '2048x2048',
+    '4:3': '2304x1728',
+    '3:4': '1728x2304',
+    '2.39:1': '3136x1344',
   };
-  const imageSize = sizeMap[aspectRatio] || '1920x1080';
+  const imageSize = sizeMap[aspectRatio] || '2848x1600';
 
   try {
     let result: { b64: string; format: string };

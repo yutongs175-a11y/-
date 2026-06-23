@@ -30,7 +30,7 @@ const AI_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
 };
 
 const IMG_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
-  jimeng: { baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedream-4-0-250828' },
+  jimeng: { baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedream-4-5-251128' },
   sd: { baseURL: 'https://api.stability.ai/v2beta/stable-image/generate', model: 'sd3.5-large' },
   custom: { baseURL: 'https://api.openai.com/v1', model: 'dall-e-3' },
 };
