@@ -683,18 +683,27 @@ function buildVideoPrompt(scene: SceneVisualData, options: {
 }
 
 /**
- * Submit video generation task to Jimeng AI (Volcengine Ark)
- * Returns task_id
+ * Submit video generation task to Jimeng AI (Volcengine independent API)
+ * Correct endpoint: https://api.xxx.com/v1/video/generations
+ * Returns task_id for polling
  */
 function submitJimengVideoTask(
   config: VidConfig,
   prompt: string,
+  options: { resolution?: string; ratio?: string; duration?: number; seed?: number; images?: string[] } = {},
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const url = new URL(`${config.baseURL}/contents/generations/tasks`);
+    // Use independent Jimeng API endpoint, not Ark gateway
+    const baseURL = config.baseURL.replace('/api/v3', '').replace(/\/+$/, '');
+    const url = new URL(`${baseURL}/v1/video/generations`);
     const body = JSON.stringify({
-      model: config.model,
-      content: [{ type: 'text', text: prompt }],
+      model: config.model || 'jimeng_v30',
+      prompt,
+      resolution: options.resolution || '720p',
+      ratio: options.ratio || '16:9',
+      duration: options.duration || 5,
+      seed: options.seed ?? -1,
+      ...(options.images && options.images.length > 0 ? { images: options.images } : {}),
     });
 
     const isHttps = url.protocol === 'https:';
@@ -718,7 +727,8 @@ function submitJimengVideoTask(
         }
         try {
           const parsed = JSON.parse(data);
-          const taskId = parsed.id;
+          // Jimeng API returns task_id in response
+          const taskId = parsed.id || parsed.task_id || parsed.data?.id;
           if (!taskId) reject(new Error('API 未返回任务 ID'));
           else resolve(taskId);
         } catch { reject(new Error('解析 API 响应失败')); }
@@ -733,13 +743,15 @@ function submitJimengVideoTask(
 
 /**
  * Poll Jimeng AI video task
+ * GET https://api.xxx.com/v1/video/generations/{task_id}
  */
 function pollJimengVideoTask(
   config: VidConfig,
   taskId: string,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const url = new URL(`${config.baseURL}/contents/generations/tasks/${taskId}`);
+    const baseURL = config.baseURL.replace('/api/v3', '').replace(/\/+$/, '');
+    const url = new URL(`${baseURL}/v1/video/generations/${taskId}`);
     const isHttps = url.protocol === 'https:';
     const agent = isHttps ? https : http;
 
@@ -757,11 +769,11 @@ function pollJimengVideoTask(
         try {
           const parsed = JSON.parse(data);
           const status = parsed.status;
-          if (status === 'succeeded') {
-            const videoUrl = parsed.content?.video_url || parsed.content?.[0]?.video_url;
+          if (status === 'SUCCESS' || status === 'succeeded') {
+            const videoUrl = parsed.video_url || parsed.data?.video_url || parsed.result?.video_url;
             if (videoUrl) resolve(videoUrl);
             else reject(new Error('视频生成成功但未返回 URL'));
-          } else if (status === 'failed') {
+          } else if (status === 'FAILED' || status === 'failed') {
             reject(new Error(parsed.error?.message || '视频生成失败'));
           } else {
             resolve(''); // still processing

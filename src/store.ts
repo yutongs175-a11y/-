@@ -72,7 +72,7 @@ function loadVidSettings(): VideoSettings {
       if (parsed.provider && parsed.apiKey && parsed.model) return parsed;
     }
   } catch {}
-  return { provider: 'jimeng', apiKey: '', baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedance-1-0-pro-t2v-250528' };
+  return { provider: 'jimeng', apiKey: '', baseURL: 'https://visual.volcengineapi.com', model: 'jimeng_v30' };
 }
 
 function saveVidSettings(s: VideoSettings) {

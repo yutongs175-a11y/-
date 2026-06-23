@@ -36,7 +36,7 @@ const IMG_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
 };
 
 const VID_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
-  jimeng: { baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedance-1.0-pro-250528' },
+  jimeng: { baseURL: 'https://visual.volcengineapi.com', model: 'jimeng_v30' },
   runway: { baseURL: 'https://api.runwayml.com/v1', model: 'gen3a_turbo' },
   pika: { baseURL: 'https://api.pika.art/v2', model: 'pika-2.0' },
   custom: { baseURL: 'https://api.runwayml.com/v1', model: 'custom-video-model' },
