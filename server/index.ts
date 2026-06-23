@@ -683,8 +683,8 @@ function buildVideoPrompt(scene: SceneVisualData, options: {
 }
 
 /**
- * Submit video generation task to Jimeng AI (Volcengine independent API)
- * Correct endpoint: https://api.xxx.com/v1/video/generations
+ * Submit video generation task to Jimeng AI via Volcengine Ark API
+ * POST https://ark.cn-beijing.volces.com/api/v3/video/generations
  * Returns task_id for polling
  */
 function submitJimengVideoTask(
@@ -693,11 +693,10 @@ function submitJimengVideoTask(
   options: { resolution?: string; ratio?: string; duration?: number; seed?: number; images?: string[] } = {},
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    // Use independent Jimeng API endpoint, not Ark gateway
-    const baseURL = config.baseURL.replace('/api/v3', '').replace(/\/+$/, '');
-    const url = new URL(`${baseURL}/v1/video/generations`);
+    // Use Ark API gateway
+    const url = new URL(`${config.baseURL}/video/generations`);
     const body = JSON.stringify({
-      model: config.model || 'jimeng_v30',
+      model: config.model || 'doubao-seedance-1-0-pro-t2v-250528',
       prompt,
       resolution: options.resolution || '720p',
       ratio: options.ratio || '16:9',
@@ -727,7 +726,7 @@ function submitJimengVideoTask(
         }
         try {
           const parsed = JSON.parse(data);
-          // Jimeng API returns task_id in response
+          // Ark API returns task_id in response
           const taskId = parsed.id || parsed.task_id || parsed.data?.id;
           if (!taskId) reject(new Error('API 未返回任务 ID'));
           else resolve(taskId);
@@ -743,15 +742,14 @@ function submitJimengVideoTask(
 
 /**
  * Poll Jimeng AI video task
- * GET https://api.xxx.com/v1/video/generations/{task_id}
+ * GET https://ark.cn-beijing.volces.com/api/v3/video/generations/{task_id}
  */
 function pollJimengVideoTask(
   config: VidConfig,
   taskId: string,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const baseURL = config.baseURL.replace('/api/v3', '').replace(/\/+$/, '');
-    const url = new URL(`${baseURL}/v1/video/generations/${taskId}`);
+    const url = new URL(`${config.baseURL}/video/generations/${taskId}`);
     const isHttps = url.protocol === 'https:';
     const agent = isHttps ? https : http;
 

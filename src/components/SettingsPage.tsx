@@ -36,7 +36,7 @@ const IMG_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
 };
 
 const VID_DEFAULTS: Record<string, { baseURL: string; model: string }> = {
-  jimeng: { baseURL: 'https://visual.volcengineapi.com', model: 'jimeng_v30' },
+  jimeng: { baseURL: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-seedance-1-0-pro-t2v-250528' },
   runway: { baseURL: 'https://api.runwayml.com/v1', model: 'gen3a_turbo' },
   pika: { baseURL: 'https://api.pika.art/v2', model: 'pika-2.0' },
   custom: { baseURL: 'https://api.runwayml.com/v1', model: 'custom-video-model' },
@@ -248,9 +248,24 @@ function ImageTab({
         </div>
       )}
 
-      <Section label="API 密钥">
-        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="生图 API Key" />
-        <p className="text-[10px] text-white/20 mt-1.5">密钥仅保存在你的浏览器本地</p>
+      <Section label="API 密钥（Ark 网关）">
+        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+        <div className="mt-1.5 space-y-1">
+          <p className="text-[10px] text-white/20">
+            即梦 AI 生图使用火山引擎 Ark 网关，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">sk-</code> 开头
+          </p>
+          <p className="text-[10px] text-white/20">
+            获取方式：登录火山引擎控制台 → 方舟 → API Key 管理 → 创建密钥
+          </p>
+          <a
+            href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-[10px] text-accent-gold/50 hover:text-accent-gold/70 transition-colors"
+          >
+            前往火山引擎获取密钥 →
+          </a>
+        </div>
       </Section>
 
       <Section label="API 地址">
@@ -325,9 +340,27 @@ function VideoTab({
         </div>
       )}
 
-      <Section label="API 密钥">
-        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="生视频 API Key" />
-        <p className="text-[10px] text-white/20 mt-1.5">密钥仅保存在你的浏览器本地</p>
+      <Section label={settings.provider === 'jimeng' ? 'API 密钥（即梦 AI）' : 'API 密钥'}>
+        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder={settings.provider === 'jimeng' ? 'sk-xxxxxxxxxxxxxxxx' : 'API Key'} />
+        <div className="mt-1.5 space-y-1">
+          {settings.provider === 'jimeng' ? (
+            <>
+              <p className="text-[10px] text-white/20">
+                即梦 AI 生视频使用火山引擎即梦独立 API，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">sk-</code> 开头（与即梦生图共用同一 Ark API Key）
+              </p>
+              <a
+                href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-[10px] text-accent-gold/50 hover:text-accent-gold/70 transition-colors"
+              >
+                前往火山引擎获取密钥 →
+              </a>
+            </>
+          ) : (
+            <p className="text-[10px] text-white/20">密钥仅保存在你的浏览器本地，不经过服务器</p>
+          )}
+        </div>
       </Section>
 
       <Section label="API 地址">
