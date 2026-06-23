@@ -249,10 +249,10 @@ function ImageTab({
       )}
 
       <Section label="API 密钥（Ark 网关）">
-        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+        <input type="password" value={settings.apiKey} onChange={(e) => update({ ...settings, apiKey: e.target.value })} className="input-glass" placeholder="ark-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxxx" />
         <div className="mt-1.5 space-y-1">
           <p className="text-[10px] text-white/20">
-            即梦 AI 生图使用火山引擎 Ark 网关，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">sk-</code> 开头
+            即梦 AI 生图使用火山引擎 Ark 网关，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">ark-</code> 开头
           </p>
           <p className="text-[10px] text-white/20">
             获取方式：登录火山引擎控制台 → 方舟 → API Key 管理 → 创建密钥
@@ -346,7 +346,7 @@ function VideoTab({
           {settings.provider === 'jimeng' ? (
             <>
               <p className="text-[10px] text-white/20">
-                即梦 AI 生视频使用火山引擎即梦独立 API，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">sk-</code> 开头（与即梦生图共用同一 Ark API Key）
+                即梦 AI 生视频使用火山引擎即梦独立 API，密钥格式为 <code className="text-white/35 bg-white/[0.05] px-1 rounded">ark-</code> 开头（与即梦生图共用同一 Ark API Key）
               </p>
               <a
                 href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey"
